@@ -5,11 +5,13 @@ Usage:
     python api/app.py
 
 API Endpoints:
+    GET / - Web interface
     POST /predict - Predict disease from uploaded image
+    POST /gradcam - Get Grad-CAM visualization
     GET /health - Health check
     GET /classes - Get list of available classes
 """
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, send_file
 from flask_cors import CORS
 from pathlib import Path
 import json
@@ -18,14 +20,18 @@ import cv2
 from io import BytesIO
 from PIL import Image
 import sys
+import os
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.inference import DiseasePredictor
+from src.inference.gradcam import GradCAM
 from src.utils import load_config, setup_logger
 
 # Initialize Flask app
-app = Flask(__name__)
+app = Flask(__name__, 
+            template_folder='../templates',
+            static_folder='../static')
 CORS(app)
 
 # Setup logger
@@ -75,6 +81,12 @@ def load_model():
     )
     
     logger.info("Model loaded successfully")
+
+
+@app.route('/', methods=['GET'])
+def index():
+    """Serve web interface."""
+    return render_template('index.html')
 
 
 @app.route('/health', methods=['GET'])
@@ -130,16 +142,19 @@ def predict():
         # Format response
         response = {
             'success': True,
-            'predicted_class': result['predicted_class'],
-            'confidence': float(result['confidence']),
-            'is_confident': result['is_confident'],
+            'prediction': {
+                'disease': result['predicted_class'],
+                'confidence': float(result['confidence']),
+                'is_confident': result['is_confident']
+            },
             'top_predictions': [
                 {
-                    'class': pred['class'],
+                    'disease': pred['class'],
                     'confidence': float(pred['confidence'])
                 }
                 for pred in result['top_predictions']
-            ]
+            ],
+            'gradcam_available': True
         }
         
         return jsonify(response)
@@ -208,6 +223,48 @@ def predict_batch():
             'success': False,
             'error': str(e)
         }), 500
+
+
+@app.route('/gradcam', methods=['POST'])
+def gradcam():
+    """Generate Grad-CAM visualization for uploaded image."""
+    try:
+        # Load model if not loaded
+        load_model()
+        
+        # Check if image in request
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image provided'}), 400
+        
+        image_file = request.files['image']
+        
+        if image_file.filename == '':
+            return jsonify({'error': 'Empty filename'}), 400
+        
+        # Read image
+        image_bytes = image_file.read()
+        image = Image.open(BytesIO(image_bytes))
+        image_array = np.array(image.convert('RGB'))
+        
+        # Generate Grad-CAM
+        try:
+            gradcam_generator = GradCAM(predictor.model)
+            heatmap = gradcam_generator.generate_heatmap(image_array)
+            overlay = gradcam_generator.overlay_heatmap(image_array, heatmap)
+            
+            # Convert to bytes
+            is_success, buffer = cv2.imencode('.png', cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
+            io_buf = BytesIO(buffer)
+            
+            return send_file(io_buf, mimetype='image/png')
+            
+        except Exception as e:
+            logger.error(f"Error generating Grad-CAM: {e}")
+            return jsonify({'error': 'Could not generate Grad-CAM visualization'}), 500
+    
+    except Exception as e:
+        logger.error(f"Error in Grad-CAM endpoint: {e}")
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

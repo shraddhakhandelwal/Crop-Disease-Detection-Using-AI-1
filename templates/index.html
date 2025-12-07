@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-powered crop disease detection system using deep learning. Upload leaf images to identify plant diseases with high accuracy.">
+    <meta name="keywords" content="crop disease detection, plant disease, AI, deep learning, agriculture">
+    <meta name="author" content="Crop Disease Detection Team">
+    <title>Crop Disease Detection AI | Identify Plant Diseases</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Crop Disease Detection AI">
+    <meta property="og:description" content="AI-powered system to detect crop diseases from leaf images">
+    <meta property="og:type" content="website">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>
+                <span class="header-icon">🌱</span>
+                Crop Disease Detection AI
+            </h1>
+            <p>Advanced Deep Learning System for Plant Disease Identification</p>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Main Card -->
+        <div class="main-card">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <h2>Upload Leaf Image</h2>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">Click to upload or drag and drop</div>
+                    <div class="upload-subtext">Supported formats: JPEG, PNG (Max 10MB)</div>
+                    <input type="file" id="fileInput" accept="image/*">
+                </div>
+            </section>
+
+            <!-- Preview Section -->
+            <section class="preview-section" id="previewSection">
+                <h2>Image Preview</h2>
+                <div class="preview-container">
+                    <div class="preview-item">
+                        <h3>Original Image</h3>
+                        <img id="originalImage" class="preview-img" alt="Original leaf image">
+                    </div>
+                    <div class="preview-item">
+                        <h3>Grad-CAM Visualization</h3>
+                        <img id="gradcamImage" class="preview-img" alt="Grad-CAM visualization" style="display: none;">
+                        <p id="gradcamPlaceholder" style="color: #7f8c8d; margin-top: 1rem;">
+                            Visualization will appear after prediction
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button class="btn" id="predictBtn" disabled>
+                        🔍 Analyze Disease
+                    </button>
+                    <button class="btn btn-secondary" id="resetBtn">
+                        🔄 Upload New Image
+                    </button>
+                </div>
+            </section>
+
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing image with AI model... Please wait</p>
+            </div>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection">
+                <div class="result-card fade-in">
+                    <div class="result-header">
+                        <h2 class="disease-name" id="diseaseName">Disease Name</h2>
+                        <div class="confidence-badge" id="confidenceBadge">
+                            <span id="confidencePercentage">0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="confidence-bar-container">
+                        <div class="confidence-bar" id="confidenceBar" style="width: 0%;">
+                            0%
+                        </div>
+                    </div>
+                    
+                    <div class="top-predictions">
+                        <h3>Top Predictions</h3>
+                        <div id="topPredictions">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <h2>About This System</h2>
+            <p>
+                Our AI-powered crop disease detection system uses state-of-the-art deep learning models 
+                trained on thousands of plant images to identify diseases with high accuracy. Simply upload 
+                a clear image of a plant leaf, and our system will analyze it instantly.
+            </p>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-card-icon">🎯</div>
+                    <h3>High Accuracy</h3>
+                    <p>98%+ accuracy using transfer learning with EfficientNet</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-icon">⚡</div>
+                    <h3>Fast Detection</h3>
+                    <p>Results in seconds with real-time analysis</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-icon">🌍</div>
+                    <h3>38 Disease Classes</h3>
+                    <p>Covers major crops: Tomato, Potato, Corn, and more</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-icon">🔬</div>
+                    <h3>Explainable AI</h3>
+                    <p>Grad-CAM visualization shows model focus areas</p>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 2rem; color: var(--dark-color);">System Features</h3>
+            <ul class="features-list">
+                <li>Transfer learning with pre-trained models (EfficientNet, ResNet, MobileNet)</li>
+                <li>Advanced data augmentation for robust predictions</li>
+                <li>Confidence scoring for each prediction</li>
+                <li>Top-K predictions to show alternative diagnoses</li>
+                <li>Grad-CAM visualization for model interpretability</li>
+                <li>RESTful API for easy integration</li>
+                <li>Docker deployment for scalability</li>
+                <li>Support for batch processing</li>
+            </ul>
+
+            <h3 style="margin-top: 2rem; color: var(--dark-color);">Supported Crops & Diseases</h3>
+            <div class="info-grid" style="margin-top: 1rem;">
+                <div class="info-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="info-card-icon">🍅</div>
+                    <h3>Tomato</h3>
+                    <p>Bacterial spot, Early blight, Late blight, Leaf mold, and more</p>
+                </div>
+                <div class="info-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="info-card-icon">🥔</div>
+                    <h3>Potato</h3>
+                    <p>Early blight, Late blight, Healthy classification</p>
+                </div>
+                <div class="info-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    <div class="info-card-icon">🌽</div>
+                    <h3>Corn (Maize)</h3>
+                    <p>Common rust, Northern leaf blight, Healthy classification</p>
+                </div>
+                <div class="info-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                    <div class="info-card-icon">🌿</div>
+                    <h3>More Crops</h3>
+                    <p>Pepper, Apple, Grape, and other major crops</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Documentation -->
+        <div class="info-section">
+            <h2>API Documentation</h2>
+            <p>
+                Integrate our crop disease detection into your applications using our REST API.
+                All endpoints return JSON responses and support standard HTTP methods.
+            </p>
+
+            <h3 style="margin-top: 1.5rem; color: var(--dark-color);">Available Endpoints</h3>
+            
+            <div class="result-card" style="margin-top: 1rem;">
+                <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">POST /predict</h4>
+                <p style="margin-bottom: 0.5rem;"><strong>Description:</strong> Predict disease from a single image</p>
+                <p style="margin-bottom: 0.5rem;"><strong>Parameters:</strong> image (file)</p>
+                <p><strong>Response:</strong> JSON with disease prediction, confidence, and top predictions</p>
+                <pre style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 0.5rem; overflow-x: auto;">
+curl -X POST -F "image=@leaf.jpg" http://localhost:5000/predict
+                </pre>
+            </div>
+
+            <div class="result-card" style="margin-top: 1rem;">
+                <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">POST /predict_batch</h4>
+                <p style="margin-bottom: 0.5rem;"><strong>Description:</strong> Predict diseases from multiple images</p>
+                <p style="margin-bottom: 0.5rem;"><strong>Parameters:</strong> images (multiple files)</p>
+                <p><strong>Response:</strong> JSON array with predictions for each image</p>
+            </div>
+
+            <div class="result-card" style="margin-top: 1rem;">
+                <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">GET /classes</h4>
+                <p style="margin-bottom: 0.5rem;"><strong>Description:</strong> Get list of all supported disease classes</p>
+                <p><strong>Response:</strong> JSON array of disease class names</p>
+            </div>
+
+            <div class="result-card" style="margin-top: 1rem;">
+                <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">GET /health</h4>
+                <p style="margin-bottom: 0.5rem;"><strong>Description:</strong> Check API health status</p>
+                <p><strong>Response:</strong> JSON with status and model information</p>
+            </div>
+        </div>
+
+        <!-- Technical Details -->
+        <div class="info-section">
+            <h2>Technical Specifications</h2>
+            
+            <div class="info-grid">
+                <div class="result-card">
+                    <h4 style="color: var(--info-color);">🧠 Model Architecture</h4>
+                    <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                        <li style="padding: 0.5rem 0;">• Transfer learning approach</li>
+                        <li style="padding: 0.5rem 0;">• Pre-trained on ImageNet</li>
+                        <li style="padding: 0.5rem 0;">• Custom classification head</li>
+                        <li style="padding: 0.5rem 0;">• Batch normalization & dropout</li>
+                    </ul>
+                </div>
+                
+                <div class="result-card">
+                    <h4 style="color: var(--info-color);">📊 Training Details</h4>
+                    <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                        <li style="padding: 0.5rem 0;">• PlantVillage dataset (54k images)</li>
+                        <li style="padding: 0.5rem 0;">• 70/20/10 train/val/test split</li>
+                        <li style="padding: 0.5rem 0;">• Data augmentation pipeline</li>
+                        <li style="padding: 0.5rem 0;">• Class weight balancing</li>
+                    </ul>
+                </div>
+                
+                <div class="result-card">
+                    <h4 style="color: var(--info-color);">⚙️ Technologies</h4>
+                    <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                        <li style="padding: 0.5rem 0;">• TensorFlow 2.x / Keras</li>
+                        <li style="padding: 0.5rem 0;">• Flask REST API</li>
+                        <li style="padding: 0.5rem 0;">• OpenCV for preprocessing</li>
+                        <li style="padding: 0.5rem 0;">• Docker containerization</li>
+                    </ul>
+                </div>
+                
+                <div class="result-card">
+                    <h4 style="color: var(--info-color);">🚀 Performance</h4>
+                    <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                        <li style="padding: 0.5rem 0;">• 98%+ test accuracy</li>
+                        <li style="padding: 0.5rem 0;">• ~50ms inference time (GPU)</li>
+                        <li style="padding: 0.5rem 0;">• Scalable architecture</li>
+                        <li style="padding: 0.5rem 0;">• Production-ready deployment</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Crop Disease Detection AI System</p>
+        <p>Built with ❤️ using TensorFlow, Keras, and Flask</p>
+        <p>
+            <a href="https://github.com/shraddhakhandelwal/Crop-Disease-Detection-Using-AI-1" target="_blank">
+                📂 View on GitHub
+            </a>
+        </p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
