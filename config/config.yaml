@@ -1,0 +1,75 @@
+# Crop Disease Detection - Configuration File
+
+# Data settings
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  samples_dir: "data/samples"
+  image_size: [224, 224]
+  batch_size: 32
+  validation_split: 0.2
+  test_split: 0.1
+  seed: 42
+
+# Model settings
+model:
+  name: "efficientnet_b0"  # Options: efficientnet_b0, resnet50, mobilenet_v2
+  pretrained: true
+  num_classes: 38  # PlantVillage dataset has 38 disease classes
+  dropout_rate: 0.3
+  input_shape: [224, 224, 3]
+
+# Training settings
+training:
+  epochs: 50
+  learning_rate: 0.001
+  optimizer: "adam"  # Options: adam, sgd, rmsprop
+  loss: "categorical_crossentropy"
+  metrics: ["accuracy", "precision", "recall"]
+  early_stopping_patience: 10
+  reduce_lr_patience: 5
+  checkpoint_monitor: "val_accuracy"
+  checkpoint_mode: "max"
+
+# Data augmentation
+augmentation:
+  rotation_range: 20
+  width_shift_range: 0.2
+  height_shift_range: 0.2
+  horizontal_flip: true
+  vertical_flip: false
+  zoom_range: 0.2
+  brightness_range: [0.8, 1.2]
+  fill_mode: "nearest"
+
+# Class weights (for imbalanced datasets)
+class_weights:
+  enabled: true
+  method: "balanced"  # Options: balanced, custom
+
+# Inference settings
+inference:
+  confidence_threshold: 0.7
+  top_k: 3
+  use_gradcam: true
+
+# Paths
+paths:
+  model_dir: "models"
+  checkpoint_dir: "models/checkpoints"
+  saved_model_dir: "models/saved_models"
+  logs_dir: "logs"
+  results_dir: "results"
+
+# MLflow settings
+mlflow:
+  tracking_uri: "mlruns"
+  experiment_name: "crop_disease_detection"
+  artifact_location: "models/mlflow_artifacts"
+
+# API settings
+api:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+  max_content_length: 16777216  # 16MB
