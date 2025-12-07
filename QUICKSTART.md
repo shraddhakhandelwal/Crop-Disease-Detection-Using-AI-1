@@ -2,6 +2,33 @@
 
 This guide will get you up and running with the crop disease detection system in 5 minutes.
 
+## 🚀 Fastest Way: Web Interface
+
+```bash
+# 1. Clone and install
+git clone https://github.com/shraddhakhandelwal/Crop-Disease-Detection-Using-AI-1.git
+cd Crop-Disease-Detection-Using-AI-1
+pip install -r requirements.txt
+
+# 2. Start web server
+python api/app.py
+
+# 3. Open browser
+# Navigate to: http://localhost:5000
+```
+
+**That's it!** You now have a fully functional web interface where you can:
+- 📤 Upload leaf images (drag & drop)
+- 🔍 Get instant disease predictions
+- 📊 View confidence scores
+- 🎨 See Grad-CAM visualizations
+
+*Note: For best results, train your own model first (see below) or use a pre-trained model.*
+
+---
+
+## 📋 Full Setup Guide
+
 ## Prerequisites
 - Python 3.10+
 - pip or conda
