@@ -32,6 +32,11 @@ An AI-powered crop disease detection system using deep learning to help farmers 
 ├── models/               # Model storage
 │   ├── checkpoints/     # Training checkpoints
 │   └── saved_models/    # Final trained models
+├── static/              # Web assets
+│   ├── css/            # Stylesheets
+│   └── js/             # JavaScript files
+├── templates/          # HTML templates
+│   └── index.html     # Main web interface
 ├── notebooks/           # Jupyter notebooks (examples)
 ├── scripts/             # Utility scripts
 │   └── download_data.sh # Dataset download helper
@@ -112,7 +117,25 @@ Training outputs:
 - Training logs: `logs/`
 - Visualizations: `results/`
 
-### 4. Evaluate Model
+### 4. Use Web Interface
+
+```bash
+# Start the web server
+python api/app.py
+
+# Open browser and navigate to:
+# http://localhost:5000
+```
+
+The web interface provides:
+- 📤 Drag-and-drop image upload
+- 🔍 Real-time disease detection
+- 📊 Confidence scores and top predictions
+- 🎨 Grad-CAM visualizations
+- 📱 Mobile-responsive design
+- 📖 Built-in API documentation
+
+### 5. Evaluate Model
 
 ```bash
 python evaluate.py \
@@ -121,7 +144,7 @@ python evaluate.py \
     --gradcam  # Optional: generate Grad-CAM visualizations
 ```
 
-### 5. Make Predictions
+### 6. Make Predictions (CLI)
 
 ```bash
 # Single image
@@ -151,6 +174,11 @@ docker-compose up --build
 
 ### API Endpoints
 
+**Web Interface**
+```bash
+# Access at: http://localhost:5000/
+```
+
 **Health Check**
 ```bash
 curl http://localhost:5000/health
@@ -168,18 +196,28 @@ curl -X POST -F "image=@leaf.jpg" \
      http://localhost:5000/predict
 ```
 
+**Get Grad-CAM Visualization**
+```bash
+curl -X POST -F "image=@leaf.jpg" \
+     http://localhost:5000/gradcam \
+     --output gradcam.png
+```
+
 **Example Response:**
 ```json
 {
   "success": true,
-  "predicted_class": "Tomato___Late_blight",
-  "confidence": 0.945,
-  "is_confident": true,
+  "prediction": {
+    "disease": "Tomato___Late_blight",
+    "confidence": 0.9876,
+    "is_confident": true
+  },
   "top_predictions": [
-    {"class": "Tomato___Late_blight", "confidence": 0.945},
-    {"class": "Tomato___Early_blight", "confidence": 0.032},
-    {"class": "Tomato___Leaf_Mold", "confidence": 0.015}
-  ]
+    {"disease": "Tomato___Late_blight", "confidence": 0.9876},
+    {"disease": "Tomato___Early_blight", "confidence": 0.0089},
+    {"disease": "Tomato___Leaf_Mold", "confidence": 0.0023}
+  ],
+  "gradcam_available": true
 }
 ```
 
@@ -195,8 +233,8 @@ response = requests.post(
 )
 
 result = response.json()
-print(f"Disease: {result['predicted_class']}")
-print(f"Confidence: {result['confidence']:.2%}")
+print(f"Disease: {result['prediction']['disease']}")
+print(f"Confidence: {result['prediction']['confidence']:.2%}")
 ```
 
 ## ⚙️ Configuration
